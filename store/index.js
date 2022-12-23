@@ -25,7 +25,7 @@ const createStore = () => {
         const MINUTES = ("00" + d.getMinutes()).slice(-2)
         const DATE_FORMAT = `${YEAR}年${MONTH}月${DAY}日 ${HOUR}:${MINUTES}`
 
-        state.todos.unshift({
+        state.todos.push({
           content: obj.content,
           state: obj.state,
           createdDate: DATE_FORMAT,

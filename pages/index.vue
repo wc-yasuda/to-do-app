@@ -12,7 +12,7 @@
         <div class="todo">{{ todo.content }}</div>
         <button class="todo-state" @click="changeState(todo, $event)">{{ todo.state }}</button>
         <div class="created-date">{{ todo.createdDate }}</div>
-        <button class="todo-close" @click="taskRemove(todo)"></button>
+        <button class="todo-close" @click="taskRemove(todo, index);"></button>
       </li>
     </ul>
   </section>
@@ -107,7 +107,7 @@ export default {
       } else {
         return this.todos;
       }
-    }
+    },
   },
   methods: {
     taskAdd: function(){
@@ -115,21 +115,36 @@ export default {
         content: this.content,
         state: this.state
       })
+      this.saveStorage(this.content)
     },
-    taskRemove: function(todo){
+    taskRemove: function(todo, index){
       this.$store.commit('taskRemove', todo)
+      this.deleteStorage(index)
     },
     changeState: function (todo, event) {
       if(todo.state === '作業中'){
         event.target.classList.add('done')
         todo.state = '完了'
-        
       } else if(todo.state === '完了'){
         event.target.classList.remove('done')
         todo.state = '作業中'
       }
     },
+    initStorage: function(){
+      localStorage.setItem(0, 'サンプル')
+    },
+    saveStorage: function(content){
+      localStorage.setItem(localStorage.length.toString(), content)
+    },
+    deleteStorage: function(index){
+      localStorage.removeItem(index)
+    },
+  },
+  mounted(){
+    this.buttons = document.querySelectorAll('.todo-list__item .todo-close')
+    this.initStorage()
   }
 }
+
 
 </script>
