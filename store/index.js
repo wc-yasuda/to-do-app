@@ -3,20 +3,13 @@ import Vuex from "vuex";
 const createStore = () => {
   return new Vuex.Store({
     state: () => ({
-      todos: [
-        {
-          content: 'サンプル',
-          state: '作業中',
-          createdDate: '2022年12月12日 16:00'
-        }
-      ],
+      todos: [],
     }),
     mutations: {
       taskAdd: function (state, obj) {
         if(!obj.content) {
           return alert('タスク名を選択してください！！')
         }
-        
         let d = new Date();
         const YEAR = d.getFullYear();
         const MONTH = ("00" + (d.getMonth() + 1)).slice(-2)
@@ -40,7 +33,14 @@ const createStore = () => {
           }
         }
       },
-    },
+      reload : function(state, obj){
+        state.todos.push({
+          content: obj.content,
+          state: obj.state,
+          createdDate: obj.createdDate,
+        });
+      }
+    }
   });
 };
 

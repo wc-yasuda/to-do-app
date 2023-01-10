@@ -7,7 +7,7 @@
       <button @click="taskAdd">タスク追加</button>
     </div>
 
-    <ul class="todo-list">
+    <ul class="todo-list" v-cloak>
       <li class="todo-list__item" v-for="(todo, index) in display_todos" :key="index">
         <div class="todo">{{ todo.content }}</div>
         <button class="todo-state" @click="changeState(todo, $event)">{{ todo.state }}</button>
@@ -15,10 +15,13 @@
         <button class="todo-close" @click="taskRemove(todo, index);"></button>
       </li>
     </ul>
+    <ul class="list"></ul>
   </section>
 </template>
 
 <style lang="scss">
+[v-cloak] { display: none; }
+
 .container {
   max-width: 1200px;
   margin: 100px auto;
@@ -89,24 +92,21 @@ export default {
   data: function() {
     return {
       content: '',
-      state: '作業中'
+      state: '作業中',
+      createdDate: ''
     }
   },
   computed: {
     ...mapState(['todos']),
     display_todos: function(){
-      if(this.find_flag){
-        let arr = []
-        let data = this.todos;
-        data.forEach(element =>{
-          if(element.content.toLowerCase() == this.content.toLowerCase()){
-            arr.push(element);
-          }
-        });
-        return arr;
-      } else {
-        return this.todos;
-      }
+      let array = []
+      let data = this.todos;
+      data.forEach(element =>{
+        if(element.content.toLowerCase() == this.content.toLowerCase()){
+          array.push(element);
+        }
+      });
+      return this.todos
     },
   },
   methods: {
@@ -121,6 +121,16 @@ export default {
       this.$store.commit('taskRemove', todo)
       this.deleteStorage(index)
     },
+    taskReload: function(){
+      const data = JSON.parse(localStorage.getItem('todos'))
+      for (let i = 0; i < data.length; i++) {
+        this.$store.commit('reload', {
+          content: data[i].content,
+          state: data[i].state,
+          createdDate: data[i].createdDate
+        })
+      }
+    },
     changeState: function (todo, event) {
       if(todo.state === '作業中'){
         event.target.classList.add('done')
@@ -130,19 +140,22 @@ export default {
         todo.state = '作業中'
       }
     },
-    initStorage: function(){
-      localStorage.setItem(0, 'サンプル')
-    },
-    saveStorage: function(content){
-      localStorage.setItem(localStorage.length.toString(), content)
+    saveStorage: function(){
+      localStorage.setItem('todos', JSON.stringify(this.todos))
     },
     deleteStorage: function(index){
-      localStorage.removeItem(index)
-    },
+      localStorage.removeItem('todos', JSON.stringify(this.todos[index]))
+      localStorage.setItem('todos', JSON.stringify(Object.assign(this.todos, this.todos)))
+    }
   },
   mounted(){
     this.buttons = document.querySelectorAll('.todo-list__item .todo-close')
-    this.initStorage()
+
+    window.onload = () => {
+      if(localStorage.getItem('todos')){
+        this.taskReload()
+      }
+    }
   }
 }
 
