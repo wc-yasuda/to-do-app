@@ -9,13 +9,20 @@
 
     <ul class="todo-list" v-cloak>
       <li class="todo-list__item" v-for="(todo, index) in display_todos" :key="index">
-        <div class="todo">{{ todo.content }}</div>
+
+        <div class="todo" v-show="!todo.isActive">{{ todo.content }}</div>
+
+        <div class="todo-input" v-if="todo.isActive">
+          <input type="text" v-model="todo.content">
+          <button @click="editDone(index)">保存</button>
+        </div>
+
+        <button v-show="!todo.isActive" @click="editItem(index)">編集</button>
         <button class="todo-state" @click="changeState(todo, $event)">{{ todo.state }}</button>
         <div class="created-date">{{ todo.createdDate }}</div>
         <button class="todo-close" @click="taskRemove(todo, index);"></button>
       </li>
     </ul>
-    <ul class="list"></ul>
   </section>
 </template>
 
@@ -93,7 +100,8 @@ export default {
     return {
       content: '',
       state: '作業中',
-      createdDate: ''
+      createdDate: '',
+      isActive: false,
     }
   },
   computed: {
@@ -110,6 +118,14 @@ export default {
     },
   },
   methods: {
+    editItem: function(index){
+      this.todos[index].isActive = true
+      this.saveStorage()
+    },
+    editDone: function(index){
+      this.todos[index].isActive = false
+      this.saveStorage()
+    },
     taskAdd: function(){
       this.$store.commit('taskAdd', {
         content: this.content,
@@ -139,6 +155,7 @@ export default {
         event.target.classList.remove('done')
         todo.state = '作業中'
       }
+      this.saveStorage()
     },
     saveStorage: function(){
       localStorage.setItem('todos', JSON.stringify(this.todos))

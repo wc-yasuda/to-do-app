@@ -22,6 +22,7 @@ const createStore = () => {
           content: obj.content,
           state: obj.state,
           createdDate: DATE_FORMAT,
+          isActive: obj.isActive
         });
       },
       taskRemove: function (state, obj) {
@@ -38,6 +39,7 @@ const createStore = () => {
           content: obj.content,
           state: obj.state,
           createdDate: obj.createdDate,
+          isActive: obj.isActive,
         });
       }
     }
