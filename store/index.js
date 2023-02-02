@@ -8,7 +8,7 @@ const createStore = () => {
     mutations: {
       taskAdd: function (state, obj) {
         if(!obj.content) {
-          return alert('タスク名を選択してください！！')
+          return alert('タスク名を入力してください！！')
         }
         let d = new Date();
         const YEAR = d.getFullYear();
@@ -22,6 +22,7 @@ const createStore = () => {
           content: obj.content,
           state: obj.state,
           createdDate: DATE_FORMAT,
+          isActive: obj.isActive
         });
       },
       taskRemove: function (state, obj) {
@@ -38,6 +39,7 @@ const createStore = () => {
           content: obj.content,
           state: obj.state,
           createdDate: obj.createdDate,
+          isActive: obj.isActive,
         });
       }
     }

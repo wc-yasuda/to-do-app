@@ -3,19 +3,26 @@
     <h1>Todo App</h1>
     <div class="task-holder">
       <label for="taskTitle">タスク名</label>
-      <input type="text" name="content" v-model="content" id="taskTitle"/>
+      <input type="text" ref="autoFocus" v-model="content" id="taskTitle"/>
       <button @click="taskAdd">タスク追加</button>
     </div>
 
     <ul class="todo-list" v-cloak>
       <li class="todo-list__item" v-for="(todo, index) in display_todos" :key="index">
-        <div class="todo">{{ todo.content }}</div>
-        <button class="todo-state" @click="changeState(todo, $event)">{{ todo.state }}</button>
+
+        <div class="todo" v-show="!todo.isActive">{{ todo.content }}</div>
+
+        <div class="todo-input" v-if="todo.isActive">
+          <input type="text" v-model="todo.content">
+          <button @click="editDone(index)">保存</button>
+        </div>
+
+        <button v-show="!todo.isActive" @click="editItem(index)">編集</button>
+        <button :class="classDoneObject(index)" class="todo-state" @click="changeState(todo)">{{ todo.state }}</button>
         <div class="created-date">{{ todo.createdDate }}</div>
         <button class="todo-close" @click="taskRemove(todo, index);"></button>
       </li>
     </ul>
-    <ul class="list"></ul>
   </section>
 </template>
 
@@ -38,7 +45,8 @@
 }
 
 .todo-list{
-  margin-top: 100px;
+  margin: 100px auto 0;
+  padding: 0;
 }
 .todo-list__item{
   display: flex;
@@ -93,7 +101,8 @@ export default {
     return {
       content: '',
       state: '作業中',
-      createdDate: ''
+      createdDate: '',
+      isActive: false,
     }
   },
   computed: {
@@ -102,20 +111,43 @@ export default {
       let array = []
       let data = this.todos;
       data.forEach(element =>{
-        if(element.content.toLowerCase() == this.content.toLowerCase()){
-          array.push(element);
-        }
+        array.push(element);
       });
       return this.todos
     },
+    classDoneObject: function () {
+      return function(index){
+        const todosObj = JSON.parse(localStorage.getItem("todos"))
+        let isState = todosObj[index].state
+        return {
+          done: isState === '完了'
+        }
+      }
+    }
   },
   methods: {
+    editItem: function(index){
+      this.todos[index].isActive = true
+    },
+    editDone: function(index){
+      const todosObj = JSON.parse(localStorage.getItem("todos"));
+      todosObj[index].content = this.todos[index].content;
+      const todosJson = JSON.stringify(todosObj)
+      localStorage.setItem('todos', todosJson)
+      this.todos[index].isActive = false
+    },
     taskAdd: function(){
+      if(this.content.match(/^\s/g)) {
+        this.content = ''
+        this.$refs.autoFocus.focus()
+        return alert('1文字目にはスペースは入れられません')
+      }
       this.$store.commit('taskAdd', {
         content: this.content,
         state: this.state
       })
-      this.saveStorage(this.content)
+      this.content = ""
+      this.saveStorage()
     },
     taskRemove: function(todo, index){
       this.$store.commit('taskRemove', todo)
@@ -131,14 +163,13 @@ export default {
         })
       }
     },
-    changeState: function (todo, event) {
+    changeState: function (todo){
       if(todo.state === '作業中'){
-        event.target.classList.add('done')
         todo.state = '完了'
       } else if(todo.state === '完了'){
-        event.target.classList.remove('done')
         todo.state = '作業中'
       }
+      this.saveStorage()
     },
     saveStorage: function(){
       localStorage.setItem('todos', JSON.stringify(this.todos))
@@ -149,12 +180,11 @@ export default {
     }
   },
   mounted(){
-    this.buttons = document.querySelectorAll('.todo-list__item .todo-close')
-
-    window.onload = () => {
-      if(localStorage.getItem('todos')){
-        this.taskReload()
-      }
+    const isTodos = localStorage.getItem('todos')
+    if(isTodos){
+      this.taskReload()
+    } else{
+      this.todos = []
     }
   }
 }
