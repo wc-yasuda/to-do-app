@@ -8,7 +8,7 @@ const createStore = () => {
     mutations: {
       taskAdd: function (state, obj) {
         if(!obj.content) {
-          return alert('タスク名を選択してください！！')
+          return alert('タスク名を入力してください！！')
         }
         let d = new Date();
         const YEAR = d.getFullYear();
